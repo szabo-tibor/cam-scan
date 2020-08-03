@@ -1,0 +1,16 @@
+searchQuery,imagePath
+title:"Blue Iris" -title:"login" 200 ok,/image/index
+http.favicon.hash:-520888198 -title:Login 200 OK,/image/index
+product:"webcamXP httpd",/cam_1.jpg
+title:"IP Webcam",/shot.jpg
+Server: IQinVision Embedded 1.0,/now.jpg
+title:"Live view",/jpg/1/image.jpg
+title:"PTZ Network Camera",/jpg/1/image.jpg
+product:"D-Link/Airlink IP webcam http config" -country:jp,/IMAGE.JPG
++tm01+ product:thttpd,no-working-path
+title:'+tm01+',no-working-path
+Server: VCS-VideoJet-Webserver,/snap.jpg
+title:"IP CAMERA Viewer",/jpg/image.jpg
+http.favicon.hash:-313860026,/jpg/image.jpg
+api_key,bZ8ANJAu1qsuSVxHlx4PVmRIlaQAMgb0
+Server: ver2.4 rev0,no-working-path
