@@ -123,14 +123,18 @@ class CamScan:
     def runOnPage(self, pagenumber):
 
         results = None
+        tries = 0
 
-        while results is None:
+        while results is None and tries <= 10:
 
             try:
                 results = self.api.search(self.search, page=pagenumber)
 
             except:
-                print('Shodan search timed out. Trying again...')
+                tries += 1
+                print('Shodan error')
+                if tries == 10:
+                    print('Giving up')
 
         threads = []
 
