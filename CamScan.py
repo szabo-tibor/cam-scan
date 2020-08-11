@@ -125,7 +125,7 @@ class CamScan:
         results = None
         tries = 0
 
-        while results is None and tries <= 10:
+        while results is None and tries < 10:
 
             try:
                 results = self.api.search(self.search, page=pagenumber)
