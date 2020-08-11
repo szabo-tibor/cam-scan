@@ -10,6 +10,7 @@ product:"D-Link/Airlink IP webcam http config" -country:jp,/IMAGE.JPG
 Server: VCS-VideoJet-Webserver,/snap.jpg
 title:"IP CAMERA Viewer",/jpg/image.jpg
 http.favicon.hash:-313860026,/jpg/image.jpg
+http.favicon.hash:661332347 -title:Error 200 OK,/record/current.jpg
 Server: ver2.4 rev0,no-working-path
 +tm01+ product:thttpd,no-working-path
 title:'+tm01+',no-working-path
