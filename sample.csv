@@ -7,7 +7,7 @@ Server: IQinVision Embedded 1.0,/now.jpg
 title:"Live view",/jpg/1/image.jpg
 title:"PTZ Network Camera",/jpg/1/image.jpg
 product:"D-Link/Airlink IP webcam http config" -country:jp,/IMAGE.JPG
-Server: VCS-VideoJet-Webserver,/snap.jpg
+HTTP/1.1 200 OK Server: VCS-VideoJet-Webserver Connection: keep-alive Content-Type: text/html Accept-Ranges: bytes,/snap.jpg
 title:"IP CAMERA Viewer",/jpg/image.jpg
 http.favicon.hash:-313860026,/jpg/image.jpg
 http.favicon.hash:661332347 -title:Error 200 OK,/record/current.jpg
