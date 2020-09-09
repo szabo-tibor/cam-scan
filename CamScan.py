@@ -186,11 +186,30 @@ class CamScan:
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{name}</title>
+    <title>Saved Images</title>
+    <script>
+        let emptyImages = [];
+
+    	function removeEmpty() {
+    		let images = document.getElementsByTagName('img');
+
+    		for (let i = 0; i < images.length; i++) {
+    			
+    			if (images[i].naturalHeight == 0) {
+    				emptyImages.push(images[i]);
+    			}
+    		}
+
+    		for (let i = 0; i < emptyImages.length; i++) {
+    			emptyImages[i].remove();
+    		}
+    	}
+    </script>
 </head>
 <body style="background-color:black">
-    <p>Click on an image to open stream</p>
-'''.format(name=self.dirname)
+    <button onclick="removeEmpty()">Remove Empty Images</button>
+    <p style="color:white;">Click on an image to open stream</p>
+'''
 
         with open('images.html', 'w') as page:
 
