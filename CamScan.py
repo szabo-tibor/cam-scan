@@ -135,6 +135,7 @@ class CamScan:
                 print('Shodan error')
                 if tries == 10:
                     print('Giving up')
+                    raise Exception('Shodan error. Is your API key correct?')
 
         threads = []
 
