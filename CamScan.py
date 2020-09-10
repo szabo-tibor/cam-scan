@@ -130,12 +130,12 @@ class CamScan:
             try:
                 results = self.api.search(self.search, page=pagenumber)
 
-            except:
+            except Exception as e:
                 tries += 1
                 print('Shodan error')
                 if tries == 10:
                     print('Giving up')
-                    raise Exception('Shodan error. Is your API key correct?')
+                    raise Exception(e.args[0])
 
         threads = []
 
