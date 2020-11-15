@@ -11,6 +11,6 @@ HTTP/1.1 200 OK Server: VCS-VideoJet-Webserver Connection: keep-alive Content-Ty
 title:"IP CAMERA Viewer",/jpg/image.jpg
 http.favicon.hash:-313860026,/jpg/image.jpg
 http.favicon.hash:661332347 -title:Error 200 OK,/record/current.jpg
-Server: ver2.4 rev0,no-working-path
+Server: ver2.4 rev0,/cgi-bin/camera
 +tm01+ product:thttpd,no-working-path
 title:'+tm01+',no-working-path
