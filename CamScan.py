@@ -1,5 +1,6 @@
 import requests
 from shodan import Shodan
+from time import sleep
 import os
 import threading
 from urllib.parse import urlparse
@@ -125,15 +126,16 @@ class CamScan:
         results = None
         tries = 0
 
-        while results is None and tries < 10:
+        while results is None:
 
             try:
                 results = self.api.search(self.search, page=pagenumber)
 
             except Exception as e:
                 tries += 1
-                print('Shodan error')
-                if tries == 10:
+                sleep(1)
+                print('Shodan error. Hold on, this may take a minute.')
+                if tries == 120:
                     print('Giving up')
                     raise Exception(e.args[0])
 
