@@ -6,3 +6,5 @@ Install dependancies using the command:
 
 usage: main.py [-h] (-s SEARCH | --csv CSV) [-pa PATH] [--init INIT]
                [-p PAGE | --all] [-d DIRNAME] [-t TIMEOUT] [-v]
+
+Alternatively, users who do not understand or care about these options can simply run quick.py
