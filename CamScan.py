@@ -346,10 +346,10 @@ class CamScan:
 				</table>
 				
 				<div style="text-align: center;">
-				<a href="%s" target="_blank">
+				<a href="%s" target="_blank" style="text-decoration: none">
 					<button type="submit">Open stream in new tab</button>
 				</a>
-                                <a href="https://www.shodan.io/host/%s" target="_blank">
+                                <a href="https://www.shodan.io/host/%s" target="_blank" style="text-decoration: none">
                                     <button style="background-color: #be473c">Shodan Page</button>
                                 </a>
 				</div>
