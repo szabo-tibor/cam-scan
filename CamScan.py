@@ -198,31 +198,31 @@ class CamScan:
             function changeColumns() {
                 let columns = parseInt(document.getElementById('cols').value);
                 let gallery = document.getElementsByClassName("gallery")[0];
-		        let images = document.getElementsByTagName("img");
-		        let s = "";
-		        let h;
+		let images = document.getElementsByTagName("img");
+		let s = "";
+		let h;
 			
-                for (let i = 0; i < columns; i++ ) {
-                    s += "auto ";
-                }
-                gallery.style.gridTemplateColumns = s;
-
-                switch (columns) {
+		for (let i = 0; i < columns; i++ ) {
+		    s += "auto ";
+		}
+		gallery.style.gridTemplateColumns = s;
+			
+		switch (columns) {
                     case 2:
                         h = 700;
-                        break;
-                    case 3:
-                        h = 480;
-                        break;
-                    case 4:
-                        h = 300;
-                        break;
-                }
+			break;
+		    case 3:
+			h = 480;
+			break;
+		    case 4:
+			h = 300;
+			break;
+		}
 
-                for (let i = 0; i < images.length; i++) {
-                            images[i].height = h;
-                }
-            }
+		for (let i = 0; i < images.length; i++) {
+                    images[i].height = h;
+		}
+	    }
         </script>
     <style>
 	button {
