@@ -326,7 +326,7 @@ class CamScan:
 			
 			<span class="caption">
 				
-				<table style="margin: auto;font-weight: bold;">
+				<table style="margin: auto;font-weight: bold;color:white;">
 				  <tr>
 					<td>IP Address:</td>
 					<td>%s</td>
