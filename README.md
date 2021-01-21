@@ -4,7 +4,6 @@ Find interesting internet-exposed cameras through the Shodan API. This script wi
 Install dependancies using the command:
 > pip install -r requirements.txt
 
-usage: main.py [-h] (-s SEARCH | --csv CSV) [-pa PATH] [--init INIT]
-               [-p PAGE | --all] [-d DIRNAME] [-t TIMEOUT] [-v]
+usage: main.py [-h] [--init INIT] [-p PAGE | --all] [-d DIRNAME] [-t TIMEOUT] [-v] [-c]
 
 Alternatively, users who do not understand or care about these options can simply run quick.py
