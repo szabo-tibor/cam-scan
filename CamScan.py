@@ -19,6 +19,7 @@ class CamScan:
         self.pages = pages
         self.verbose = verbose
         self.api = None
+        self.live_hosts = []
         
 
         try:
@@ -60,7 +61,7 @@ class CamScan:
 
             f.close()
             
-            print('CSV file input. Select search from below:\n')
+            print('Select search from below:\n')
 
             y = 0
             for search in searches:
@@ -92,7 +93,9 @@ class CamScan:
             raise Exception('Wrong type. pages value can be set to int, range, or None')
         
 
-    def requestAndDownload(self, url):
+    def requestAndDownload(self, shodan_result):
+
+        url = 'http://' + str(shodan_result['ip_str']) + ':' + str(shodan_result['port']) + self.path
 
         try:
 
@@ -107,6 +110,8 @@ class CamScan:
 
                 with open(filename, 'wb') as img:
                     img.write(r.content)
+
+                self.live_hosts.append([filename,shodan_result])
 
             else:
                 if self.verbose:
@@ -143,8 +148,7 @@ class CamScan:
 
         for result in results['matches']:
 
-            url = 'http://' + str(result['ip_str']) + ':' + str(result['port']) + self.path
-            x = threading.Thread(target=self.requestAndDownload, args=(url,))
+            x = threading.Thread(target=self.requestAndDownload, args=(result,))
             threads.append(x)
             x.start()
 
@@ -166,7 +170,7 @@ class CamScan:
 
             print('Running every page')
 
-            for page in range(self.pagesCount()):
+            for page in range(self.pagesCount() + 1):
                 print('Starting page:', page)
                 self.runOnPage(page)
 
@@ -190,45 +194,179 @@ class CamScan:
 <html>
 <head>
     <title>Saved Images</title>
-    <script>
-        let emptyImages = [];
+        <script>
+            function changeColumns() {
+                let columns = parseInt(document.getElementById('cols').value);
+                let gallery = document.getElementsByClassName("gallery")[0];
+		        let images = document.getElementsByTagName("img");
+		        let s = "";
+		        let h;
+			
+                for (let i = 0; i < columns; i++ ) {
+                    s += "auto ";
+                }
+                gallery.style.gridTemplateColumns = s;
 
-    	function removeEmpty() {
-    		let images = document.getElementsByTagName('img');
+                switch (columns) {
+                    case 2:
+                        h = 700;
+                        break;
+                    case 3:
+                        h = 480;
+                        break;
+                    case 4:
+                        h = 300;
+                        break;
+                }
 
-    		for (let i = 0; i < images.length; i++) {
-    			
-    			if (images[i].naturalHeight == 0) {
-    				emptyImages.push(images[i]);
-    			}
-    		}
+                for (let i = 0; i < images.length; i++) {
+                            images[i].height = h;
+                }
+            }
+        </script>
+    <style>
+	button {
+		border: none;
+		color: white;
+		padding: 5px 40px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		margin: 5px 2px;
+		cursor: pointer;
+		background-color: #386fc2;
+	}
 
-    		for (let i = 0; i < emptyImages.length; i++) {
-    			emptyImages[i].remove();
-    		}
-    	}
-    </script>
+	
+    .gallery {
+        display: grid;
+        grid-template-columns: auto auto auto;
+	grid-template-rows: auto;
+        grid-gap: 10px;
+    }
+    .gallery img {
+        width: 100%;
+    }
+	.gallery .item {
+		position: relative;
+		overflow: hidden;
+	}
+	.gallery .item img {
+		vertical-align: middle;
+	}
+	
+	.gallery .caption {
+		margin: 0;
+		padding: .5em;
+		position: absolute;
+		z-index: 1;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+		max-height: 100%;
+		overflow: auto;
+		box-sizing: border-box;
+		transition: transform 0.2s;
+		transform: translateY(100%);
+		background: rgba(0, 0, 0, 0.4);
+		color:white;
+		font-family: Arial;
+	}
+	
+	.gallery .item:hover .caption {
+		transform: translateY(0%);
+	}
+
+    h1 {
+        text-align: center;
+        color:#919191;
+        font-family: Arial;
+    }
+    label {
+        color:#919191;
+		font-family: Arial;
+    }
+    </style>
 </head>
-<body style="background-color:black">
-    <button onclick="removeEmpty()">Remove Empty Images</button>
-    <p style="color:white;">Click on an image to open stream</p>
+<body style="background-color:black" onload="changeColumns()">
+    <h1>Saved Images:</h1>
+	<label for="cols">Columns:</label>
+	<select id="cols" onchange="changeColumns()">
+	  <option value="2">2</option>
+	  <option value="3">3</option>
+	  <option value="4" selected="selected">4</option>
+	</select>
+	<hr style="width:70%;">
+
+    <div class=gallery>
 '''
 
         with open('images.html', 'w') as page:
 
             page.write(html)
 
-            for name_of_file in os.listdir():
+            for host in self.live_hosts:
 
-                if '.png' in name_of_file:
+                if os.path.getsize(host[0]) > 0:
                     
-                    link = 'http://' + name_of_file.replace('-', ':').strip('.png')
+                    link = 'http://' + host[0].replace('-', ':').strip('.png')
 
-                    page.write('\n\t<a href="{}" target="_blank">'.format(link))
-                    page.write('\n\t\t<img src="{}" height="480" width="720">'.format(name_of_file))
-                    page.write('\n\t</a>')
-                    
-            page.write('\n</body>\n</html>')
+                    data = (host[0],
+                            host[1]['ip_str'],
+                            host[1]['location']['city'],
+                            host[1]['location']['country_name'],
+                            host[1]['org'],
+                            link,
+                            host[1]['ip_str'])
+
+                    element = f'''
+                <div class="item">
+			<img src="%s">
+			
+			<span class="caption">
+				
+				<table style="margin: auto;font-weight: bold;">
+				  <tr>
+					<td>IP Address:</td>
+					<td>%s</td>
+				  </tr>
+				  <tr>
+					<td>City:</td>
+					<td>%s</td>
+				  </tr>
+				  <tr>
+					<td>Country:</td>
+					<td>%s</td>
+				  </tr>
+				  <tr>
+					<td>Organization:</td>
+					<td>%s</td>
+				  </tr>
+				</table>
+				
+				<div style="text-align: center;">
+				<a href="%s" target="_blank">
+					<button type="submit">Open stream in new tab</button>
+				</a>
+                                <a href="https://www.shodan.io/host/%s" target="_blank">
+                                    <button style="background-color: #be473c">Shodan Page</button>
+                                </a>
+				</div>
+				
+			</span>
+		</div>
+''' % data
+
+                    try:
+                        page.write(element)
+
+                    except UnicodeEncodeError:
+                        if self.verbose:
+                            print("That was wierd. UnicodeEncodeError for host", host[1]['ip_str'])
+                        pass
+                        
+            page.write('\n\t</div>\n</body>\n</html>')
             
         
     def showImages(self):
