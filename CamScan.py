@@ -3,7 +3,6 @@ from shodan import Shodan
 from time import sleep
 import os
 import threading
-from urllib.parse import urlparse
 import webbrowser
 import csv
 
@@ -94,8 +93,10 @@ class CamScan:
         
 
     def requestAndDownload(self, shodan_result):
-
-        url = 'http://' + str(shodan_result['ip_str']) + ':' + str(shodan_result['port']) + self.path
+        
+        host = str(shodan_result['ip_str'])
+        port = str(shodan_result['port'])
+        url = 'http://{}:{}'.format(host,port) + self.path
 
         try:
 
@@ -106,7 +107,7 @@ class CamScan:
                 if self.verbose:
                     print(url, ' - Success')
                     
-                filename = urlparse(url).netloc.replace(':','-') + '.png'
+                filename = '{}-{}'.format(host,port) + '.png'
 
                 with open(filename, 'wb') as img:
                     img.write(r.content)
@@ -139,7 +140,8 @@ class CamScan:
             except Exception as e:
                 tries += 1
                 sleep(1)
-                print('Shodan error. Hold on, this may take a minute.')
+                print(e.args[0])
+                print('Retrying...')
                 if tries == 120:
                     print('Giving up')
                     raise Exception(e.args[0])
@@ -241,7 +243,7 @@ class CamScan:
 	
     .gallery {
         display: grid;
-        grid-template-columns: auto auto auto;
+        grid-template-columns: auto auto auto auto;
 	grid-template-rows: auto;
         grid-gap: 10px;
     }
@@ -309,9 +311,8 @@ class CamScan:
             for host in self.live_hosts:
 
                 if os.path.getsize(host[0]) > 0:
-                    
-                    link = 'http://' + host[0].replace('-', ':').strip('.png')
 
+                    link = 'http://' + host[1]['ip_str'] + ':' + str(host[1]['port'])
                     data = (host[0],
                             host[1]['ip_str'],
                             host[1]['location']['city'],
