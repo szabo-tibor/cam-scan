@@ -1,5 +1,5 @@
 # cam-scan
-Find interesting internet-exposed cameras through the Shodan API. This script will gather images from live hosts found on Shodan and present them in an HTML document.
+Find interesting internet-exposed cameras through the Shodan API. This script will gather images from live hosts found on Shodan and present them in an HTML document. Great for showcasing the poor state of IoT security today.
 
 Install dependancies using the command:
 > pip install -r requirements.txt
