@@ -307,8 +307,12 @@ class CamScan:
         with open('images.html', 'w') as page:
 
             page.write(html)
-
-            for host in self.live_hosts:
+            no_dupes = []
+            for h in self.live_hosts:
+                if h not in no_dupes:
+                    no_dupes.append(h)
+                
+            for host in no_dupes:
 
                 if os.path.getsize(host[0]) > 0:
 
