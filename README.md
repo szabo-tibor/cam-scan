@@ -7,3 +7,5 @@ Install dependancies using the command:
 usage: main.py [-h] [--init INIT] [-p PAGE | --all] [-d DIRNAME] [-t TIMEOUT] [-v] [-c]
 
 Alternatively, users who do not understand or care about these options can simply run quick.py
+
+Some of the Shodan queries used here require a paid Shodan account to use
