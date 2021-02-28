@@ -64,10 +64,14 @@ def main():
         if choice != 'y':
             raise Exception
 
-
-    scan.run()
-    scan.generatePage()
-    scan.showImages()
+    try:
+        scan.run()
+    except:
+        print("Stopped")
+    finally:
+        if scan.live_hosts != 0:
+            scan.generatePage()
+            scan.showImages()
 
 
 if __name__ == '__main__':
