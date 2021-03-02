@@ -19,8 +19,13 @@ class CamScan:
         self.verbose = verbose
         self.api = None
         self.live_hosts = []
-        
 
+        # Change this value to False if you want to generate HTML that will link
+        # to external images from each host each time it is opened, rather than
+        # downloading and storing them to your local machine.
+        # TODO: add command line option for this
+        self.store_offline = True
+        
         try:
             
             keyfile = open('shodan_api_key','r')
@@ -54,20 +59,16 @@ class CamScan:
             data = csv.DictReader(f)
 
             searches = {}
-
-            for x in data:
-                searches[x['searchQuery']] = x['imagePath']
-
-            f.close()
-            
             print('Select search from below:\n')
-
             y = 0
-            for search in searches:
-                print(str(y) + ') ' + search)
+            for x in data:
+                print(str(y) + ") " + x['friendlyName'])
+                searches[x['searchQuery']] = x['imagePath']
                 y += 1
 
-            choice = int(input('\nChoose search: '))
+            f.close()
+            print("\nSearches marked with '(Free)' don't require a paid shodan account to use")
+            choice = int(input('Choose search: '))
             self.search = list(searches.keys())[choice]
             self.path = list(searches.values())[choice]
 
@@ -105,18 +106,23 @@ class CamScan:
             if r.status_code == 200:
 
                 if self.verbose:
-                    print(url, ' - Success')
-                    
+                    print(url, '- Success')
+
                 filename = '{}-{}'.format(host,port) + '.png'
 
-                with open(filename, 'wb') as img:
-                    img.write(r.content)
+                if self.store_offline == True:
+
+                    with open(filename, 'wb') as img:
+                        img.write(r.content)
 
                 self.live_hosts.append([filename,shodan_result])
 
+            elif r.status_code == 401:
+                if self.verbose:
+                    print(url, '- 401 Unauthorized')
             else:
                 if self.verbose:
-                    print(url, r.status_code, 'Error')
+                    print(url, '-', r.status_code, 'Error')
 
         except requests.exceptions.ReadTimeout:
             if self.verbose:
@@ -139,10 +145,10 @@ class CamScan:
 
             except Exception as e:
                 tries += 1
-                sleep(1)
+                sleep(2)
                 print(e.args[0])
                 print('Retrying...')
-                if tries == 120:
+                if tries == 240:
                     print('Giving up')
                     raise Exception(e.args[0])
 
@@ -184,7 +190,7 @@ class CamScan:
             
         elif type(self.pages) is range:
 
-            for page in self.pages:
+            for page in self.pages + 1:
                 print('Starting page:', page)
                 self.runOnPage(page)
 
@@ -229,6 +235,8 @@ class CamScan:
     <style>
 	button {
 		border: none;
+		border-radius: 5px;
+		outline: none;
 		color: white;
 		padding: 5px 40px;
 		text-align: center;
@@ -237,9 +245,21 @@ class CamScan:
 		font-size: 16px;
 		margin: 5px 2px;
 		cursor: pointer;
+		transition-duration: 0.2s;
 		background-color: #386fc2;
 	}
+	
+	button.shodan_button {
+		background-color: #be473c
+	}
+	
+        button:hover {
+            background-color: #305896;
+        }
 
+        .shodan_button:hover {
+            background-color: #a63c32;
+        }
 	
     .gallery {
         display: grid;
@@ -311,23 +331,29 @@ class CamScan:
             for h in self.live_hosts:
                 if h not in no_dupes:
                     no_dupes.append(h)
-                
+            
             for host in no_dupes:
 
-                if os.path.getsize(host[0]) > 0:
+                link = 'http://' + host[1]['ip_str'] + ':' + str(host[1]['port'])
+                
+                if self.store_offline == True:
+                    img_src = host[0]
+                    if os.path.getsize(host[0]) <= 1:
+                        continue
+                else:
+                    img_src = link + self.path
+                    
+                data = (img_src,
+                        host[1]['ip_str'],
+                        host[1]['location']['city'],
+                        host[1]['location']['country_name'],
+                        host[1]['org'],
+                        link,
+                        host[1]['ip_str'])
 
-                    link = 'http://' + host[1]['ip_str'] + ':' + str(host[1]['port'])
-                    data = (host[0],
-                            host[1]['ip_str'],
-                            host[1]['location']['city'],
-                            host[1]['location']['country_name'],
-                            host[1]['org'],
-                            link,
-                            host[1]['ip_str'])
-
-                    element = f'''
+                element = f'''
                 <div class="item">
-			<img src="%s">
+			<img src="%s" onerror="this.parentElement.remove()">
 			
 			<span class="caption">
 				
@@ -352,10 +378,10 @@ class CamScan:
 				
 				<div style="text-align: center;">
 				<a href="%s" target="_blank" style="text-decoration: none">
-					<button type="submit">Open stream in new tab</button>
+					<button type="submit" class="stream_button">Open stream in new tab</button>
 				</a>
                                 <a href="https://www.shodan.io/host/%s" target="_blank" style="text-decoration: none">
-                                    <button style="background-color: #be473c">Shodan Page</button>
+                                    <button class="shodan_button">Shodan Page</button>
                                 </a>
 				</div>
 				
@@ -363,13 +389,13 @@ class CamScan:
 		</div>
 ''' % data
 
-                    try:
-                        page.write(element)
+                try:
+                    page.write(element)
 
-                    except UnicodeEncodeError:
-                        if self.verbose:
-                            print("That was wierd. UnicodeEncodeError for host", host[1]['ip_str'])
-                        pass
+                except UnicodeEncodeError:
+                    if self.verbose:
+                        print("That was wierd. UnicodeEncodeError for host", host[1]['ip_str'])
+                    pass
                         
             page.write('\n\t</div>\n</body>\n</html>')
             
