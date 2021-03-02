@@ -29,10 +29,6 @@ def main():
                         help='Print each url to terminal as each connection is made, along with its status',
                         action='store_true')
 
-    parser.add_argument('-c','--count',
-                        help='Returns # of pages for chosen Shodan query',
-                        action='store_true')
-
     cli_input = parser.parse_args()
 
     scan = CamScan.CamScan()
@@ -57,12 +53,17 @@ def main():
 
     scan.chooseFromCSV('queries.csv')
 
-    if cli_input.count:
-        print(scan.pagesCount(), 'Page(s)')
-        choice = input('Run? [y/n]:')
+    if type(scan.pages) == int:
+        print("Running page", scan.pages, "of", scan.pagesCount())
+    if scan.pages == None:
+        print("Running all", scan.pagesCount(), "Pages")
+    if type(scan.pages) == range:
+        print("Running page", scan.pages[0], "to", scan.pages[-1])
 
-        if choice != 'y':
-            raise Exception
+    choice = input('Continue? [y/n]:')
+
+    if choice != 'y':
+        exit(0)
 
     try:
         scan.run()
