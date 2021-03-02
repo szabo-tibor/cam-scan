@@ -1,16 +1,22 @@
-searchQuery,imagePath
-title:"Blue Iris" -title:"login" 200 ok,/image/index
-http.favicon.hash:-520888198 -title:Login 200 OK,/image/index
-product:"webcamXP httpd",/cam_1.jpg
-title:"IP Webcam",/shot.jpg
-Server: IQinVision Embedded 1.0,/now.jpg
-title:"Live view",/jpg/1/image.jpg
-title:"PTZ Network Camera",/jpg/1/image.jpg
-http.favicon.hash:-1616143106,/jpg/1/image.jpg
-product:"D-Link/Airlink IP webcam http config" -country:jp,/IMAGE.JPG
-HTTP/1.1 200 OK Server: VCS-VideoJet-Webserver Connection: keep-alive Content-Type: text/html Accept-Ranges: bytes,/snap.jpg
-title:"IP CAMERA Viewer",/jpg/image.jpg
-http.favicon.hash:-313860026,/jpg/image.jpg
-http.favicon.hash:661332347 -title:Error 200 OK,/record/current.jpg
-Server: ver2.4 rev0,/cgi-bin/camera
-Content-Length: 1552 Server: gen5th/1.33.00,/oneshotimage
+friendlyName,searchQuery,imagePath
+Blue Iris,title:"Blue Iris" -title:"login" 200 ok,/image/index
+Blue Iris Alternative Search,http.favicon.hash:-520888198 -title:Login 200 OK,/image/index
+Webcamxp,product:"webcamXP httpd",/cam_1.jpg
+IP Webcam,title:"IP Webcam",/shot.jpg
+(Free) IQinVision,Server: IQinVision Embedded 1.0,/now.jpg
+Axis Cameras,title:"Live view",/jpg/1/image.jpg
+PTZ Axis Cameras,title:"PTZ Network Camera",/jpg/1/image.jpg
+Alternative Axis Camera Search,http.favicon.hash:-1616143106,/jpg/1/image.jpg
+(Free) Free Axis cameras search,axis 200 OK,/jpg/1/image.jpg
+(Free) D-Link/Airlink IP webcam,product:"D-Link/Airlink IP webcam http config" -country:jp,/IMAGE.JPG
+(Free) Bosch,HTTP/1.1 200 OK Server: VCS-VideoJet-Webserver Connection: keep-alive Content-Type: text/html Accept-Ranges: bytes,/snap.jpg
+IP Camera Viewer,title:"IP CAMERA Viewer",/jpg/image.jpg
+IP Camera Viewer Alt,http.favicon.hash:-313860026,/jpg/image.jpg
+IP Camera Viewer Alt Alt,http.favicon.hash:-631840230,/jpg/image.jpg
+Mobotix Cameras,http.favicon.hash:661332347 -title:Error 200 OK,/record/current.jpg
+(Free) Panasonic Network Camera,Server: ver2.4 rev0,/cgi-bin/camera
+(Free) Sony Network Camera,Content-Length: 1552 Server: gen5th/1.33.00,/oneshotimage
+Baudisch Camera,http.favicon.hash:746882768,/jpg/image.jpg
+Loxone Intercom Video,title:"Loxone Intercom Video",/jpg/image.jpg
+Vivotek Cameras,http.html_hash:-88043523,/cgi-bin/viewer/video.jpg
+Panasonic alt search,http.html_hash:-399166722,/SnapshotJPEG?Resolution=640x480
