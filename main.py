@@ -70,7 +70,7 @@ def main():
     except:
         print("Stopped")
     finally:
-        if scan.live_hosts != 0:
+        if len(scan.live_hosts) != 0:
             scan.generatePage()
             scan.showImages()
 
