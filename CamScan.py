@@ -190,7 +190,7 @@ class CamScan:
             
         elif type(self.pages) is range:
 
-            for page in self.pages + 1:
+            for page in self.pages:
                 print('Starting page:', page)
                 self.runOnPage(page)
 
