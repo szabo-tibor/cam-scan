@@ -4,7 +4,23 @@ Find interesting internet-exposed cameras through the Shodan API. This script wi
 Install dependancies using the command:
 > pip install -r requirements.txt
 
-usage: main.py [-h] [--init INIT] [-p PAGE | --all] [-d DIRNAME] [-t TIMEOUT] [-v] [-c]
+usage: main.py [-h] [--init INIT] [-p PAGE | --all] [-d DIRNAME] [-t TIMEOUT] [-v]
+
+Arguments:
+- -h, --help - Prints the help page
+- --init - Initializes Shodan with your API key (needs to be used only on first run)
+- -p, --page - Choose which page of results to run
+- --all - Run every availible page on Shodan
+- -d, --dirname - Set the name of the directory to store images in
+- -t, --timeout - Time in seconds to wait for a response from each host before giving up
+- -v, --verbose - Print each url to terminal as each connection is made, along with its status
+
+
+A few examples:
+
+> main.py --init api_key_here -p 1 -d myImages
+
+> main.py --all -t 5 -v
 
 Alternatively, users who do not understand or care about these options can simply run quick.py
 
