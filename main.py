@@ -11,14 +11,14 @@ def main():
                         help='Initialize Shodan API with your API key (only has to be done on first run)')
 
     pageInfo.add_argument('-p','--page',
-                          help='Specify page or pages to search')
+                          help='Specify page or comma-separated page values of Shodan results to run against. Ex. 1-5,8,9')
 
     pageInfo.add_argument('--all',
                           help='Run every page of search results on Shodan',
                           action='store_true')
 
     parser.add_argument('-d','--dirname',
-                        help='specify name of new directory to save images',
+                        help='Specify name of directory or absolute path of location to store images',
                         type=str)
 
     parser.add_argument('-t','--timeout',
@@ -29,6 +29,10 @@ def main():
                         help='Print each url to terminal as each connection is made, along with its status',
                         action='store_true')
 
+    parser.add_argument("-ext",
+                        help='Generate an HTML page which loads external images from each host, rather than downloading images to your local machine',
+                        action='store_true')
+
     cli_input = parser.parse_args()
 
     scan = CamScan.CamScan()
@@ -37,7 +41,7 @@ def main():
         scan.initShodan(cli_input.init)
 
     if cli_input.page:
-        scan.setPages(eval(cli_input.page))
+        scan.setPages(cli_input.page)
 
     if cli_input.all:
         scan.setPages(None)
@@ -51,29 +55,35 @@ def main():
     if cli_input.verbose:
         scan.verbose = True
 
+    if cli_input.ext:
+        scan.store_offline = False
+
     scan.chooseFromCSV('queries.csv')
+    total_available_pages = scan.pagesCount()
 
-    if type(scan.pages) == int:
-        print("Running page", scan.pages, "of", scan.pagesCount())
-    if scan.pages == None:
-        print("Running all", scan.pagesCount(), "Pages")
-    if type(scan.pages) == range:
-        print("Running page", scan.pages[0], "to", scan.pages[-1])
+    if type(scan.pages) == list:
+        for pageNumber in scan.pages:
+            if pageNumber > total_available_pages:
+                print("Page number {} goes past end of {} total available pages of results for this search. Exiting...".format(pageNumber,total_available_pages))
+                exit(1)
 
-    choice = input('Continue? [y/n]:')
+        print("Running a total of {} pages, from an available {}.".format(len(scan.pages),total_available_pages))
+    
+    if type(scan.pages) == type(None):
+        print("Running all {} pages".format(total_available_pages))
+
+    choice = input("Continue? [y/n]:")
 
     if choice != 'y':
         exit(0)
 
     try:
         scan.run()
-    except:
-        print("Stopped")
+    except Exception as e:
+        print(e)
     finally:
         if len(scan.live_hosts) != 0:
             scan.generatePage()
-            scan.showImages()
-
 
 if __name__ == '__main__':
     main()
