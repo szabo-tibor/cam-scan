@@ -9,7 +9,7 @@ import csv
 class CamScan:
     
     def __init__(self, dirname='Images', search=None,
-                 path=None, timeout=4, pages=0, verbose=False):
+                 path=None, timeout=4, pages=[0], verbose=False):
 
         self.search = search
         self.path = path
@@ -19,11 +19,6 @@ class CamScan:
         self.verbose = verbose
         self.api = None
         self.live_hosts = []
-
-        # Change this value to False if you want to generate HTML that will link
-        # to external images from each host each time it is opened, rather than
-        # downloading and storing them to your local machine.
-        # TODO: add command line option for this
         self.store_offline = True
         
         try:
@@ -84,13 +79,25 @@ class CamScan:
         return int(hosts / 100) + 1
 
 
-    def setPages(self, pages):
+    def setPages(self, pages_str):
 
-        if type(pages) in [int, range, type(None)]:
-            self.pages = pages
+        if type(pages_str) == str:
+            self.pages = []
+            for num in pages_str.split(','):
+                if '-' in num:
+                    r = num.split('-')
+                    for number in range(int(r[0]),int(r[1]) + 1):
+                        self.pages.append(number)
+
+                else:
+                    self.pages.append(int(num))
+
+        elif type(pages_str) == type(None):
+            self.pages = None
 
         else:
-            raise Exception('Wrong type. pages value can be set to int, range, or None')
+            raise Exception("Page value needs to be either a list, or None")
+
         
 
     def requestAndDownload(self, shodan_result):
@@ -167,7 +174,7 @@ class CamScan:
     def run(self):
 
         if self.api == None:
-            raise Exception('No Shodan key')
+            raise Exception('Shodan API key not set')
         
         os.mkdir(self.dirname)
         os.chdir(self.dirname)
@@ -175,27 +182,18 @@ class CamScan:
         print('Saving images to', os.getcwd(), '\n')
 
         if self.pages is None:
-
             print('Running every page')
-
             for page in range(self.pagesCount() + 1):
                 print('Starting page:', page)
                 self.runOnPage(page)
 
-        elif type(self.pages) is int:
-
-            print('Running page', self.pages)
-
-            self.runOnPage(self.pages)
-            
-        elif type(self.pages) is range:
-
+        elif type(self.pages) is list:
+            print("Running pages", self.pages)
             for page in self.pages:
-                print('Starting page:', page)
+                print('Starting page:',page)
                 self.runOnPage(page)
 
-
-    def generatePage(self):
+    def generatePage(self,open_on_completion=True):
 
         html = '''
 <!DOCTYPE html>
@@ -398,12 +396,11 @@ class CamScan:
                     pass
                         
             page.write('\n\t</div>\n</body>\n</html>')
+
+        if open_on_completion:
+            webbrowser.open('images.html')
             
         
-    def showImages(self):
-        webbrowser.open('images.html')
-        
-
     def info(self):
 
         print('search:', self.search)
