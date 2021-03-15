@@ -10,7 +10,7 @@ Arguments:
 - -h, --help - Prints the help page
 - --init - Initializes Shodan with your API key (needs to be used only on first run)
 - -p, --page - Set page or range of Shodan results to run against
-- --all - Run every availible page on Shodan
+- --all - Run every available page on Shodan
 - -d, --dirname - Set the name of the directory to store images in
 - -t, --timeout - Time in seconds to wait for a response from each host before giving up
 - -v, --verbose - Print each url to terminal as each connection is made, along with its status
