@@ -80,7 +80,8 @@ def main():
 
     try:
         scan.run()
-
+    except Exception as e:
+        print(e)
     finally:
         if len(scan.live_hosts) != 0:
             scan.generatePage()
