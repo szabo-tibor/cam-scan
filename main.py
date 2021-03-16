@@ -61,16 +61,17 @@ def main():
     scan.chooseFromCSV('queries.csv')
     total_available_pages = scan.pagesCount()
 
-    if type(scan.pages) == list:
+    if type(scan.pages) == dict:
         for pageNumber in scan.pages:
-            if pageNumber > total_available_pages:
-                print("Page number {} goes past end of {} total available pages of results for this search. Exiting...".format(pageNumber,total_available_pages))
+            if int(pageNumber) > total_available_pages + 1:
+                print("Page number {} goes past end of {} total available pages of results for this search. Exiting...".format(pageNumber,total_available_pages+1))
                 exit(1)
 
-        print("Running a total of {} pages, from an available {}.".format(len(scan.pages),total_available_pages))
-    
-    if type(scan.pages) == type(None):
-        print("Running all {} pages".format(total_available_pages))
+        print("Running a total of {} pages, from an available {}.".format(len(scan.pages),total_available_pages + 1))
+
+    if scan.pages == None:
+        print("Running all {} pages.".format(total_available_pages))
+        
 
     choice = input("Continue? [y/n]:")
 
@@ -79,8 +80,7 @@ def main():
 
     try:
         scan.run()
-    except Exception as e:
-        print(e)
+
     finally:
         if len(scan.live_hosts) != 0:
             scan.generatePage()
