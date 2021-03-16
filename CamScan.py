@@ -9,13 +9,13 @@ import csv
 class CamScan:
     
     def __init__(self, dirname='Images', search=None,
-                 path=None, timeout=4, pages=[0], verbose=False):
+                 path=None, timeout=4, verbose=False):
 
         self.search = search
         self.path = path
         self.dirname = dirname
         self.timeout = timeout
-        self.pages = pages
+        self.pages = {0: None}
         self.verbose = verbose
         self.api = None
         self.live_hosts = []
@@ -46,6 +46,7 @@ class CamScan:
 
         self.api = Shodan(key)
 
+
     def chooseFromCSV(self, file):
 
         if os.path.exists(file):
@@ -62,7 +63,7 @@ class CamScan:
                 y += 1
 
             f.close()
-            print("\nSearches marked with '(Free)' don't require a paid shodan account to use")
+            print("\nSearches marked with '(Free)' don't require a paid Shodan account to use")
             choice = int(input('Choose search: '))
             self.search = list(searches.keys())[choice]
             self.path = list(searches.values())[choice]
@@ -81,25 +82,25 @@ class CamScan:
 
     def setPages(self, pages_str):
 
+        self.pages = {}
+
         if type(pages_str) == str:
-            self.pages = []
             for num in pages_str.split(','):
                 if '-' in num:
                     r = num.split('-')
                     for number in range(int(r[0]),int(r[1]) + 1):
-                        self.pages.append(number)
+                        self.pages[number] = None
 
                 else:
-                    self.pages.append(int(num))
+                    self.pages[num] = None
 
-        elif type(pages_str) == type(None):
+        elif pages_str == None:
             self.pages = None
 
         else:
-            raise Exception("Page value needs to be either a list, or None")
+            raise Exception("Page value needs to be a string, or None")
 
         
-
     def requestAndDownload(self, shodan_result):
         
         host = str(shodan_result['ip_str'])
@@ -113,7 +114,7 @@ class CamScan:
             if r.status_code == 200:
 
                 if self.verbose:
-                    print(url, '- Success')
+                    print('[200 OK] Connection to {}:{} successfull'.format(host,port))
 
                 filename = '{}-{}'.format(host,port) + '.png'
 
@@ -124,44 +125,29 @@ class CamScan:
 
                 self.live_hosts.append([filename,shodan_result])
 
-            elif r.status_code == 401:
-                if self.verbose:
-                    print(url, '- 401 Unauthorized')
             else:
                 if self.verbose:
-                    print(url, '-', r.status_code, 'Error')
+                    print('[{} Error] Connection to {}:{} failed'.format(r.status_code,host,port))
 
         except requests.exceptions.ReadTimeout:
             if self.verbose:
-                print(url, '- Timed out')
+                print('[Error] Connection to {}:{} timed out'.format(host,port))
 
         except Exception as e:
             #print(e)
             if self.verbose:
-                print(url, '- Connection Error')
+                print('[Error] Connection to {}:{} failed'.format(host,port))
+
 
     def runOnPage(self, pagenumber):
 
-        results = None
-        tries = 0
-
-        while results is None:
-
-            try:
-                results = self.api.search(self.search, page=pagenumber)
-
-            except Exception as e:
-                tries += 1
-                sleep(2)
-                print(e.args[0])
-                print('Retrying...')
-                if tries == 240:
-                    print('Giving up')
-                    raise Exception(e.args[0])
-
+        r = self.pages[pagenumber]
         threads = []
 
-        for result in results['matches']:
+        if self.verbose:
+            print("[Info] Contacting hosts on page",pagenumber)
+            
+        for result in r['matches']:
 
             x = threading.Thread(target=self.requestAndDownload, args=(result,))
             threads.append(x)
@@ -171,27 +157,49 @@ class CamScan:
             thread.join()
                     
 
-    def run(self):
+    def shodanSearch(self):
 
         if self.api == None:
             raise Exception('Shodan API key not set')
         
+        else:
+            for pageNum in self.pages:
+
+                if self.verbose:
+                    print("[Info] Searching shodan on page",pageNum)
+                
+                tries = 0
+                while self.pages[pageNum] == None:
+                    try:
+                        self.pages[pageNum] = self.api.search(self.search, page=pageNum)
+                    except Exception as e:
+                        print("[Error]", e)
+                        print("Retrying...")
+                        if tries == 30:
+                            raise Exception(e.args[0])
+
+                    sleep(1.5)
+
+
+    def run(self):
+
+        if self.pages == None:
+            self.pages = {}
+            for page in range(self.pagesCount() + 1):
+                self.pages[page] = None
+
         os.mkdir(self.dirname)
         os.chdir(self.dirname)
 
         print('Saving images to', os.getcwd(), '\n')
+        threading.Thread(target=self.shodanSearch).start()
 
-        if self.pages is None:
-            print('Running every page')
-            for page in range(self.pagesCount() + 1):
-                print('Starting page:', page)
-                self.runOnPage(page)
+        for page in self.pages:
+            while self.pages[page] == None:
+                sleep(1.5)
 
-        elif type(self.pages) is list:
-            print("Running pages", self.pages)
-            for page in self.pages:
-                print('Starting page:',page)
-                self.runOnPage(page)
+            self.runOnPage(page)
+
 
     def generatePage(self,open_on_completion=True):
 
@@ -407,4 +415,7 @@ class CamScan:
         print('path:', self.path)
         print('dirname', self.dirname)
         print('timeout:', self.timeout)
-        print('pages:', self.pages)
+        try:
+            print('pages:', len(self.pages))
+        except TypeError:
+            print('pages:', None)
