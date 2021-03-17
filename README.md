@@ -29,4 +29,4 @@ A few examples:
 
 Alternatively, users who do not understand or care about these options can simply run quick.py
 
-Some of the Shodan queries used here require a paid Shodan account to use
+Some of the Shodan queries used here and the --page argument require a paid Shodan account to use
