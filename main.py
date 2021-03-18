@@ -62,12 +62,22 @@ def main():
     total_available_pages = scan.pagesCount()
 
     if type(scan.pages) == dict:
+        err_pages = []
         for pageNumber in scan.pages:
-            if int(pageNumber) > total_available_pages + 1:
-                print("Page number {} goes past end of {} total available pages of results for this search. Exiting...".format(pageNumber,total_available_pages+1))
-                exit(1)
+            
+            if int(pageNumber) > total_available_pages:
+                err_pages.append(int(pageNumber))
 
-        print("Running a total of {} pages, from an available {}.".format(len(scan.pages),total_available_pages + 1))
+        if len(err_pages) == 1:
+            print("Page number", err_pages[0], "is out of range of available pages. Removing...")
+            scan.pages.pop(err_pages[0])
+
+        elif len(err_pages) > 1:
+            print("Page numbers", err_pages, "are out of range of available pages. Removing...")
+            for page in err_pages:
+                scan.pages.pop(page)
+            
+        print("Running a total of {} pages, from an available {}.".format(len(scan.pages),total_available_pages))
 
     if scan.pages == None:
         print("Running all {} pages.".format(total_available_pages))
@@ -81,10 +91,17 @@ def main():
     try:
         scan.run()
     except Exception as e:
+        print("[Error] Script terminated")
         print(e)
     finally:
         if len(scan.live_hosts) != 0:
             scan.generatePage()
+            print()
+            print(scan.stats()[0])
+            print("Time elapsed:", int(scan.time_elapsed), "seconds")
+
+        else:
+            print("No live hosts found")
 
 if __name__ == '__main__':
     main()
