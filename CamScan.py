@@ -1,6 +1,6 @@
 import requests
 from shodan import Shodan
-from time import sleep
+from time import sleep,time
 import os
 import threading
 import webbrowser
@@ -20,7 +20,10 @@ class CamScan:
         self.api = None
         self.live_hosts = []
         self.store_offline = True
-        
+        self.success_count = 0
+        self.failed_count = 0
+        self.total = 0
+
         try:
             
             keyfile = open('shodan_api_key','r')
@@ -89,10 +92,10 @@ class CamScan:
                 if '-' in num:
                     r = num.split('-')
                     for number in range(int(r[0]),int(r[1]) + 1):
-                        self.pages[number] = None
+                        self.pages[int(number)] = None
 
                 else:
-                    self.pages[num] = None
+                    self.pages[int(num)] = None
 
         elif pages_str == None:
             self.pages = None
@@ -114,7 +117,7 @@ class CamScan:
             if r.status_code == 200:
 
                 if self.verbose:
-                    print('[200 OK] Connection to {}:{} successfull'.format(host,port))
+                    print('[Info] Connection to {}:{} successfull'.format(host,port))
 
                 filename = '{}-{}'.format(host,port) + '.png'
 
@@ -124,37 +127,42 @@ class CamScan:
                         img.write(r.content)
 
                 self.live_hosts.append([filename,shodan_result])
+                self.success_count += 1
 
             else:
+                self.failed_count += 1
                 if self.verbose:
-                    print('[{} Error] Connection to {}:{} failed'.format(r.status_code,host,port))
+                    print('[HTTP {} Error] Connection to {}:{} failed'.format(r.status_code,host,port))
 
         except requests.exceptions.ReadTimeout:
+            self.failed_count += 1
             if self.verbose:
-                print('[Error] Connection to {}:{} timed out'.format(host,port))
+                print('[Network Error] Connection to {}:{} timed out'.format(host,port))
 
         except Exception as e:
+            self.failed_count += 1
             #print(e)
             if self.verbose:
-                print('[Error] Connection to {}:{} failed'.format(host,port))
+                print('[Network Error] Connection to {}:{} failed'.format(host,port))
 
 
     def runOnPage(self, pagenumber):
 
         r = self.pages[pagenumber]
-        threads = []
+        self.threads = []
 
         if self.verbose:
             print("[Info] Contacting hosts on page",pagenumber)
             
         for result in r['matches']:
+            self.total += 1
 
             x = threading.Thread(target=self.requestAndDownload, args=(result,))
-            threads.append(x)
+            self.threads.append(x)
             x.start()
 
-        for thread in threads:
-            thread.join()
+        #for thread in threads:
+        #    thread.join()
                     
 
     def shodanSearch(self):
@@ -173,19 +181,32 @@ class CamScan:
                     try:
                         self.pages[pageNum] = self.api.search(self.search, page=pageNum)
                     except Exception as e:
-                        print("[Error]", e)
-                        print("Retrying...")
-                        if tries == 30:
-                            raise Exception(e.args[0])
+                        tries += 1
+
+                        if "upgrade your API plan" in e.args[0]:
+                            print("[Fatal error] Paid Shodan account required for pages and search filters.")
+                            self.end = True
+                            #raise Exception(e.args[0]) from e
+                            break
+                            
+                        if tries == 35:
+                            print("[Fatal Error] Shodan not responding correctly, giving up")
+                            self.end = True
+                            #raise Exception(e.args[0]) from e
+                            break
+
+                        print("[API Error]", e, "- Retrying...")
 
                     sleep(1.5)
 
 
     def run(self):
 
+        self.end = False
+
         if self.pages == None:
             self.pages = {}
-            for page in range(self.pagesCount() + 1):
+            for page in range(1,self.pagesCount() + 1):
                 self.pages[page] = None
 
         os.mkdir(self.dirname)
@@ -194,11 +215,24 @@ class CamScan:
         print('Saving images to', os.getcwd(), '\n')
         threading.Thread(target=self.shodanSearch).start()
 
+        print("[Info] Starting...")
+        start_time = time()
+
         for page in self.pages:
-            while self.pages[page] == None:
+
+            while self.pages[page] == None and not self.end:
                 sleep(1.5)
 
-            self.runOnPage(page)
+            if not self.end:
+                self.runOnPage(page)
+
+        for thread in self.threads:
+            thread.join()
+
+        if self.verbose:
+            print("[Info] Completed")
+            
+        self.time_elapsed = time() - start_time
 
 
     def generatePage(self,open_on_completion=True):
@@ -400,7 +434,7 @@ class CamScan:
 
                 except UnicodeEncodeError:
                     if self.verbose:
-                        print("That was wierd. UnicodeEncodeError for host", host[1]['ip_str'])
+                        print("[Unicode Error] That was wierd. UnicodeEncodeError for host", host[1]['ip_str'])
                     pass
                         
             page.write('\n\t</div>\n</body>\n</html>')
@@ -419,3 +453,10 @@ class CamScan:
             print('pages:', len(self.pages))
         except TypeError:
             print('pages:', None)
+
+    def stats(self):
+        percent_success = int((self.success_count / self.total) * 100)
+        percent_failure = int((self.failed_count / self.total) * 100)
+        s = "{} out of {} hosts are viewable, {}% success rate".format(self.success_count,self.total,percent_success)
+
+        return [s,percent_success,percent_failure]
