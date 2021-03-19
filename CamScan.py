@@ -149,7 +149,6 @@ class CamScan:
     def runOnPage(self, pagenumber):
 
         r = self.pages[pagenumber]
-        self.threads = []
 
         if self.verbose:
             print("[Info] Contacting hosts on page",pagenumber)
@@ -203,6 +202,7 @@ class CamScan:
     def run(self):
 
         self.end = False
+	self.threads = []
 
         if self.pages == None:
             self.pages = {}
