@@ -146,7 +146,7 @@ class CamScan:
                 print('[Network Error] Connection to {}:{} failed'.format(host,port))
 
 
-    def runOnPage(self, pagenumber):
+    def _runOnPage(self, pagenumber):
 
         r = self.pages[pagenumber]
 
@@ -202,7 +202,7 @@ class CamScan:
     def run(self):
 
         self.end = False
-	self.threads = []
+        self.threads = []
 
         if self.pages == None:
             self.pages = {}
@@ -221,10 +221,10 @@ class CamScan:
         for page in self.pages:
 
             while self.pages[page] == None and not self.end:
-                sleep(1.5)
+                sleep(.1)
 
             if not self.end:
-                self.runOnPage(page)
+                self._runOnPage(page)
 
         for thread in self.threads:
             thread.join()
@@ -454,9 +454,19 @@ class CamScan:
         except TypeError:
             print('pages:', None)
 
+        if self.checkPTZ:
+            print("checkPTZ:", True)
+
+
     def stats(self):
-        percent_success = int((self.success_count / self.total) * 100)
-        percent_failure = int((self.failed_count / self.total) * 100)
+
+        if self.total != 0:
+            percent_success = int((self.success_count / self.total) * 100)
+            percent_failure = int((self.failed_count / self.total) * 100)
+        else:
+            percent_success = 0
+            percent_failure = 0
+
         s = "{} out of {} hosts are viewable, {}% success rate".format(self.success_count,self.total,percent_success)
 
         return [s,percent_success,percent_failure]
