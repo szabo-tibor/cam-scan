@@ -469,7 +469,7 @@ class CamScan:
                 else:
                     classname = "item nonptz"
 
-                if self.checkPTZ:
+                if self.checkPTZ and self.checkPTZPath:
                     if host[2]:
                         ptz_controls_tr = '''
                   <tr>
