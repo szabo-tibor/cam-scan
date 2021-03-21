@@ -33,6 +33,10 @@ def main():
                         help='Generate an HTML page which loads external images from each host, rather than downloading images to your local machine',
                         action='store_true')
 
+    parser.add_argument("-ptz",
+                        help='Check cameras for password protected PTZ (Pan Tilt Zoom) controls.',
+                        action='store_true')
+
     cli_input = parser.parse_args()
 
     scan = CamScan.CamScan()
@@ -58,6 +62,9 @@ def main():
     if cli_input.ext:
         scan.store_offline = False
 
+    if cli_input.ptz:
+        scan.checkPTZ = True
+
     scan.chooseFromCSV('queries.csv')
     total_available_pages = scan.pagesCount()
 
@@ -82,6 +89,8 @@ def main():
     if scan.pages == None:
         print("Running all {} pages.".format(total_available_pages))
         
+    if scan.checkPTZ and not scan.checkPTZPath:
+        print("PTZ checking not available for this search")
 
     choice = input("Continue? [y/n]:")
 
@@ -97,11 +106,14 @@ def main():
         if len(scan.live_hosts) != 0:
             scan.generatePage()
             print()
-            print(scan.stats()[0])
-            print("Time elapsed:", int(scan.time_elapsed), "seconds")
+            stats = scan.stats()
+            print(stats[0])
+            print(stats[1])
+            if scan.checkPTZ:
+                print(stats[2])
 
         else:
-            print("No live hosts found")
+            print("[Info] No live hosts found")
 
 if __name__ == '__main__':
     main()
