@@ -66,7 +66,11 @@ def main():
         scan.checkPTZ = True
 
     scan.chooseFromCSV('queries.csv')
-    total_available_pages = scan.pagesCount()
+    try:
+        total_available_pages = scan.pagesCount()
+    except AttributeError:
+        print("Shodan not initialized")
+        exit()
 
     if type(scan.pages) == dict:
         err_pages = []
