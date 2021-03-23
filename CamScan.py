@@ -1,6 +1,6 @@
 import requests
 from shodan import Shodan
-from time import sleep,time
+from time import sleep,time,localtime
 import os
 import threading
 import webbrowser
@@ -64,6 +64,7 @@ class CamScan:
                 item.append(x['searchQuery'])
                 item.append(x['imagePath'])
                 item.append(x['ptzCheckPath'])
+                item.append(x['friendlyName'])
                 print(str(y) + ") " + x['friendlyName'])
                 searches.append(item)
                 y += 1
@@ -78,6 +79,7 @@ class CamScan:
                 self.search = searches[choice][0]
                 self.path = searches[choice][1]
                 self.checkPTZPath = searches[choice][2]
+                self.friendly_name = searches[choice][3]
             except ValueError:
                 print("That's not a number...")
             except IndexError:
@@ -255,6 +257,8 @@ class CamScan:
 
         print("[Info] Starting...")
         start_time = time()
+        t = localtime()
+        self.start_time_str = "{}/{}/{} {}:{}:{}".format(t[1],t[2],t[0],t[3],t[4],t[5])
 
         for page in self.pages:
 
@@ -277,17 +281,18 @@ class CamScan:
 
         if self.checkPTZ and self.checkPTZPath:
             ptz_box = '''
-    <label for="ptz_box" style="margin-left: 10px">Hide hosts with closed PTZ controls:</label>
-    <input id="ptz_box" type="checkbox" onchange="ptzCheckBox()">'''
+            <div class="thing">
+                <label for="ptz_box">Hide hosts with closed PTZ controls:</label>
+                <input id="ptz_box" type="checkbox" onchange="ptzCheckBox()">
+            </div>'''
 
         else:
             ptz_box = ""
 
-        html = '''
-<!DOCTYPE html>
+        html = '''<!DOCTYPE html>
 <html>
 <head>
-    <title>Saved Images</title>
+    <title>'''+self.friendly_name+'''</title>
         <script>
             function changeColumns() {
                 let columns = parseInt(document.getElementById('cols').value);
@@ -421,25 +426,71 @@ class CamScan:
 	}
 
     h1 {
-        text-align: center;
-        color:#919191;
         font-family: Arial;
+        color: white;
     }
     label {
-        color:#919191;
-		font-family: Arial;
+        font-family: Courier New;
+        color: white;
+    }
+        div.container{
+        display: flex;
+        background: linear-gradient(#8f8f8f, #757575);
+        padding: 10px;
+        border-radius: 17px;
+        margin-bottom: 8px;
+        margin: 20px;
+    }
+    div.section {
+        flex: auto;
+        width: 33%;
+    }
+    div.thing {
+        margin: 5px;
+    }
+
+    .stats_table {
+        float: right;
+        font-family: Courier New;
+        color: white;
     }
     </style>
 </head>
 <body style="background-color:black" onload="changeColumns()">
-    <h1>Saved Images:</h1>
-	<label for="cols">Columns:</label>
-	<select id="cols" onchange="changeColumns()">
-	  <option value="2">2</option>
-	  <option value="3">3</option>
-	  <option value="4" selected="selected">4</option>
-	</select>''' + ptz_box + '''
-	<hr style="width:70%;">
+    <div class="container">
+        <div class="section">
+            <div class="thing">
+                <label for="cols">Columns:</label>
+                <select id="cols" onchange="changeColumns()">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4" selected="selected">4</option>
+                </select>
+            </div>'''+ptz_box+'''
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h1>'''+self.friendly_name+'''</h1>
+        </div>
+
+        <div class="section">
+            <table class="stats_table">
+                <tr>
+                    <td>Query:</td>
+                    <td>'''+self.search+'''</td>
+                </tr>
+                <tr>
+                    <td>Count:</td>
+                    <td>'''+str(self.success_count)+''' open, '''+str(self.failed_count)+''' closed</td>
+                </tr>
+                <tr>
+                    <td>Ran at:</td>
+                    <td>'''+self.start_time_str+'''</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
 
     <div class=gallery>
 '''
@@ -474,13 +525,13 @@ class CamScan:
                         ptz_controls_tr = '''
                   <tr>
                     <td>PTZ Controls:</td>
-                    <td>Possibly</td>
+                    <td style="font-weight: bold;">Authorized</td>
                   </tr>'''
                     else:
                         ptz_controls_tr = '''
                   <tr>
                     <td>PTZ Controls:</td>
-                    <td>No</td>
+                    <td style="font-weight: bold;">Unauthorized</td>
                   </tr>'''
                 else:
                     ptz_controls_tr = ""
@@ -501,22 +552,22 @@ class CamScan:
 			
 			<span class="caption">
 				
-				<table style="margin: auto;font-weight: bold;color:white;">
+				<table style="margin: auto;color:white;">
 				  <tr>
 					<td>IP Address:</td>
-					<td>%s</td>
+					<td style="font-weight: bold;">%s</td>
 				  </tr>
 				  <tr>
 					<td>City:</td>
-					<td>%s</td>
+					<td style="font-weight: bold;">%s</td>
 				  </tr>
 				  <tr>
 					<td>Country:</td>
-					<td>%s</td>
+					<td style="font-weight: bold;">%s</td>
 				  </tr>
 				  <tr>
 					<td>Organization:</td>
-					<td>%s</td>
+					<td style="font-weight: bold;">%s</td>
 				  </tr>%s
 				</table>
 				
@@ -524,9 +575,9 @@ class CamScan:
 				<a href="%s" target="_blank" style="text-decoration: none">
 					<button type="submit" class="stream_button">Open stream in new tab</button>
 				</a>
-                                <a href="https://www.shodan.io/host/%s" target="_blank" style="text-decoration: none">
-                                    <button class="shodan_button">Shodan Page</button>
-                                </a>
+                    <a href="https://www.shodan.io/host/%s" target="_blank" style="text-decoration: none">
+                        <button class="shodan_button">Shodan Page</button>
+                    </a>
 				</div>
 				
 			</span>
