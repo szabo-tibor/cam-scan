@@ -20,4 +20,4 @@ Baudisch Camera,http.favicon.hash:746882768,/jpg/image.jpg
 Loxone Intercom Video,title:"Loxone Intercom Video",/jpg/image.jpg
 Vivotek Cameras,http.html_hash:-88043523,/cgi-bin/viewer/video.jpg
 Panasonic alt search,http.html_hash:-399166722,/SnapshotJPEG?Resolution=640x480
-[PTZ] Canon VB Viewer,Server: VB title:"Network Camera",/-wvhttp-01-/image.cgi,/-wvhttp-01-/control.cgi?c.1.zoom=2000
+[PTZ] Canon VB Viewer,Server: VB title:"Network Camera",/-wvhttp-01-/image.cgi,/-wvhttp-01-/control.cgi?c.1.zoom=6500
